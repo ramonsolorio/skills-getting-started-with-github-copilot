@@ -3,6 +3,14 @@ High School Management System API
 
 A super simple FastAPI application that allows students to view and sign up
 for extracurricular activities at Mergington High School.
+
+This API provides endpoints to:
+1. View all available extracurricular activities
+2. Sign up students for specific activities
+3. Manage participant limits for each activity
+
+The application uses in-memory storage for simplicity and serves
+a static frontend for user interaction.
 """
 
 from fastapi import FastAPI, HTTPException
@@ -11,6 +19,7 @@ from fastapi.responses import RedirectResponse
 import os
 from pathlib import Path
 
+# Initialize FastAPI application with metadata
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
 
@@ -20,6 +29,15 @@ app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
           "static")), name="static")
 
 # In-memory activity database
+# Structure:
+# {
+#    "Activity Name": {
+#        "description": "Text description of the activity",
+#        "schedule": "Days and times the activity occurs",
+#        "max_participants": Maximum number of students allowed (int),
+#        "participants": List of student email addresses currently registered
+#    }
+# }
 activities = {
     "Chess Club": {
         "description": "Learn strategies and compete in chess tournaments",
@@ -80,28 +98,55 @@ activities = {
 
 @app.get("/")
 def root():
+    """
+    Redirect root endpoint to the static HTML frontend.
+    
+    Returns:
+        RedirectResponse: Redirects user to the main HTML page
+    """
     return RedirectResponse(url="/static/index.html")
 
 
 @app.get("/activities")
 def get_activities():
+    """
+    Retrieve all available activities with their details.
+    
+    Returns:
+        dict: Complete activities dictionary with all activity details and current participants
+    """
     return activities
 
 
 @app.post("/activities/{activity_name}/signup")
 def signup_for_activity(activity_name: str, email: str):
-    """Sign up a student for an activity"""
+    """
+    Sign up a student for a specific activity.
+    
+    Args:
+        activity_name (str): Name of the activity to join
+        email (str): Student's email address used for registration
+    
+    Returns:
+        dict: Success message confirming registration
+        
+    Raises:
+        HTTPException(404): If the requested activity doesn't exist
+        HTTPException(400): If the student is already registered for the activity
+        HTTPException(400): If the activity has reached maximum capacity
+    """
     # Validate activity exists
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
 
-    # Get the specificy activity
+    # Get the specific activity
     activity = activities[activity_name]
     
     # Validate student is not already signed up
     if email in activity["participants"]:
         raise HTTPException(status_code=400, detail=f"{email} is already signed up for {activity_name}")
 
+    # Check if activity has reached maximum capacity
     if len(activity["participants"]) >= activity["max_participants"]:
         raise HTTPException(status_code=400, detail=f"Cannot sign up {email} for {activity_name}: maximum participants reached")
     

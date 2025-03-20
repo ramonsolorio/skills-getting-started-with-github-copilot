@@ -1,10 +1,29 @@
+/**
+ * Mergington High School Activities Frontend
+ * 
+ * This script handles the frontend functionality for the Mergington High School
+ * extracurricular activities website. It provides functionality to:
+ * - Fetch and display available activities from the API
+ * - Show participant information for each activity
+ * - Allow students to sign up for activities
+ * - Display success/error messages for signup attempts
+ * 
+ * The script initializes when the DOM content is fully loaded.
+ */
 document.addEventListener("DOMContentLoaded", () => {
   const activitiesList = document.getElementById("activities-list");
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
-  // Function to fetch activities from API
+  /**
+   * Fetches all activities from the server API and displays them on the page
+   * Also populates the activity selection dropdown for the signup form
+   * 
+   * @async
+   * @function fetchActivities
+   * @returns {Promise<void>}
+   */
   async function fetchActivities() {
     try {
       const response = await fetch("/activities");
@@ -46,7 +65,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Handle form submission
+  /**
+   * Handles the form submission for activity signup
+   * Sends a POST request to the server and displays the result message
+   * 
+   * @async
+   * @function handleFormSubmit
+   * @param {Event} event - The form submission event
+   * @returns {Promise<void>}
+   */
   signupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -86,6 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Initialize app
+  // Initialize app by fetching activities when page loads
   fetchActivities();
 });
